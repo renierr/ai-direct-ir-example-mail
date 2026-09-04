@@ -1,8 +1,8 @@
 ;; Inbox rendering. It owns the mock display until real providers exist.
 (func (export "_start")
-  (call $print (i32.const 0x1000) (i32.const 606)))
+  (call $print (global.get $inbox.ptr) (global.get $inbox.len)))
 
-(data (i32.const 0x1000)
+(data $inbox (i32.const 0x1000)
   "\n"
   "  AI-Direct Mail                                      mock/offline\n"
   "  ----------------------------------------------------------------\n"
