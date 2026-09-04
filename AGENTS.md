@@ -17,6 +17,9 @@ The app may break during that builder-phase work.
 ## Rules
 
 - Never install, upgrade, or remove software without explicit user consent.
+- **Never commit or push without an explicit request.** Finishing a unit of
+  work is not a request. Leave changes in the working tree, report what
+  changed, and let the user decide when it lands.
 - Never commit real email, account identifiers, passwords, OAuth tokens, SMTP
   credentials, private keys, mailbox databases, or copied private fixtures.
 - Change the smallest owning WAT source under `src/`, not generated
