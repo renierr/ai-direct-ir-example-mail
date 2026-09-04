@@ -4,6 +4,23 @@ An experimental terminal mail client authored directly in WebAssembly Text
 (WAT). It is an integration-driving example for the AI-Direct IR harness and
 provider catalog, not a production mail client yet.
 
+It is intentionally allowed to break while it drives generic improvements in
+the sibling `ai-direct-ir` harness and `ai-direct-ir-providers` catalog. A mail
+requirement should produce a reusable platform/provider capability, never a
+mail-specific harness API.
+
+## Three Repositories
+
+| Repository | What it is for | What we do there |
+|---|---|---|
+| `ai-direct-ir` | Generic platform | Improve `host-rs` composition, validation, permissions, lifecycle, and packaging when this app exposes a reusable need. |
+| `ai-direct-ir-providers` | Reusable providers | Package upstream SQLite, mail protocol, TUI, and other mature implementations as reproducible WASM/WIT providers. |
+| `ai-direct-ir-example-mail` | This application | Write the mail client's product behavior and state transitions directly in WAT, then consume declared providers. |
+
+This repository is the consumer and integration test, not the place to solve
+generic runtime or library problems. It may intentionally break while sibling
+projects replace an experimental interface.
+
 ## Current Demo
 
 The runnable starter draws a compact mock inbox using WASI stdout. It proves
@@ -66,10 +83,18 @@ they exist as locally vendorable, checked artifacts.
 - `providers/` -- proposed WIT contracts and integration requirements.
 - `docs/` -- product behavior, state model, and verification plan.
 
+The scaffold convention is deliberate: `docs/01-spec.md` records requested
+behavior and acceptance criteria, `docs/02-architecture.md` records state,
+providers, and trust boundaries, and `docs/03-verification.md` records the
+commands and observable behavior that prove the work. This project predates the
+generic scaffold docs but follows the same separation with its architecture and
+verification documents.
+
 ## Roadmap
 
 1. Prove WIT/Component Model composition with a small provider.
-2. Add a SQLite-backed `mail-store` provider and generic writable data mount.
+2. Present SQLite implementation candidates for explicit approval, then add a
+   SQLite-backed `mail-store` provider and generic writable data mount.
 3. Add mail synchronization and submission providers with explicit TLS and
    credential handling.
 4. Replace the mock inbox with provider-backed account setup, sync, search,

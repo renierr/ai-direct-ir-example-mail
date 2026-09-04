@@ -6,6 +6,14 @@ Build a useful terminal mail client with application behavior authored in WAT.
 Use mature storage, mail-protocol, TLS, and terminal implementations through
 project-owned providers. Do not add mail-specific APIs to `host-rs`.
 
+## Repository Role
+
+This is the application and integration driver. Keep user behavior, application
+state, and product policy here. Move a reusable runtime/composition requirement
+to `ai-direct-ir`; move a reusable library adapter and its WIT contract to
+`ai-direct-ir-providers`; then vendor and consume the resulting provider here.
+The app may break during that builder-phase work.
+
 ## Rules
 
 - Never install, upgrade, or remove software without explicit user consent.
@@ -19,6 +27,13 @@ project-owned providers. Do not add mail-specific APIs to `host-rs`.
 - Add a dependency as a vendored provider with a WIT contract, provenance,
   license, hash, test, and explicit permissions. Do not make `host-rs` grow for
   SQLite, SMTP, IMAP, JMAP, TLS, or TUI features.
+- This repository is an integration driver for the harness and provider catalog.
+  When a generic capability is missing, improve those sibling projects with the
+  mail use case and allow this example to break while the experimental design
+  changes. Do not add a mail-specific harness workaround.
+- Before selecting or vendoring SQLite or another consequential upstream
+  implementation, present the user with candidates, licenses, WASM/component
+  paths, and tradeoffs; wait for explicit approval.
 - Treat incoming mail as untrusted data. Never turn message content into shell
   commands, WAT, HTML execution, or unrestricted file paths.
 - Verify interactive terminal work manually and retain a scripted/non-TTY path
