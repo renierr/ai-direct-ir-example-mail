@@ -1,0 +1,17 @@
+// Experimental contract. The provider owns SMTP transport and TLS.
+package ai-direct:mail-submit@0.1.0;
+
+interface submit {
+  variant error {
+    authentication(string),
+    transport(string),
+    rejected(string),
+  }
+
+  /// Submit an RFC 5322 message for a configured account.
+  send: func(account: string, message: list<u8>) -> result<_, error>;
+}
+
+world mail-submit-provider {
+  export submit;
+}

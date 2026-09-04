@@ -1,0 +1,8 @@
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+Repository-authored material is licensed under the GNU Affero General Public
+License, version 3 or later, matching the AI-Direct IR harness and provider
+catalog repositories. The complete license text is available at:
+https://www.gnu.org/licenses/agpl-3.0.txt
+
+Vendored providers retain their own upstream licenses and notices.

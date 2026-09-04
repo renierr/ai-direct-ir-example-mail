@@ -1,0 +1,9 @@
+# Experimental mail-client foundation. Add real providers only after they exist
+# as local, hash-pinned artifacts under vendor/.
+target = "native"
+mode = "command"
+
+[app]
+source = "mail.wat"
+path = "mail.wasm"
+run = "_start"

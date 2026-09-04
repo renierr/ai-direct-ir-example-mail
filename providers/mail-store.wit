@@ -1,0 +1,31 @@
+// Experimental contract: redesign freely while the provider ecosystem is built.
+package ai-direct:mail-store@0.1.0;
+
+interface store {
+  record message-summary {
+    id: u64,
+    mailbox: string,
+    sender: string,
+    subject: string,
+    received-unix-seconds: u64,
+    unread: bool,
+  }
+
+  variant error {
+    storage(string),
+    invalid-input(string),
+  }
+
+  /// Open the account-local store selected by application configuration.
+  open: func(account: string) -> result<own<mailbox>, error>;
+
+  resource mailbox {
+    list-messages: func(folder: string, offset: u32, limit: u32) -> result<list<message-summary>, error>;
+    mark-read: func(id: u64, read: bool) -> result<_, error>;
+    close: func();
+  }
+}
+
+world mail-store-provider {
+  export store;
+}

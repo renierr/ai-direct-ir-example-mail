@@ -1,0 +1,20 @@
+# Generated application and release bundles.
+*.wasm
+dist/
+
+# Local mail data and secrets. Never commit these.
+config.local.toml
+*.db
+*.sqlite
+*.sqlite3
+.env
+
+# Future vendored provider build output and tool directories.
+vendor/
+build/
+
+# Editor / OS noise.
+.DS_Store
+*~
+.idea/
+.vscode/

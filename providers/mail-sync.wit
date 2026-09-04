@@ -1,0 +1,22 @@
+// Experimental contract. The provider owns protocol parsing and TLS.
+package ai-direct:mail-sync@0.1.0;
+
+interface sync {
+  variant error {
+    authentication(string),
+    transport(string),
+    protocol(string),
+  }
+
+  record sync-result {
+    downloaded: u32,
+    updated: u32,
+  }
+
+  /// Synchronize a configured account. Credentials remain provider-owned.
+  refresh: func(account: string) -> result<sync-result, error>;
+}
+
+world mail-sync-provider {
+  export sync;
+}
