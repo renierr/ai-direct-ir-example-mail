@@ -21,6 +21,37 @@ This repository is the consumer and integration test, not the place to solve
 generic runtime or library problems. It may intentionally break while sibling
 projects replace an experimental interface.
 
+## Environment
+
+### Current Mock Application
+
+The current Core WAT demo needs only these executables on `PATH`:
+
+| Tool | Why it is needed |
+|---|---|
+| `host-rs` | Builds, checks, runs, and packages this project. |
+| `wat2wasm` from WABT | Assembles `mail.wat` into `mail.wasm`. |
+
+No Rust, Cargo, Rust WASM target, database, network service, mail account, or
+provider compiler is required to run the mock inbox. `.env` is deliberately
+ignored for future local credentials or configuration; this application does
+not currently read it or pass environment variables to WAT.
+
+### Future Component Providers
+
+When this project composes a WIT component root with vendored providers,
+`host-rs build` will also require `wasm-tools 1.257.1` on the build machine. It
+will use only `validate`, `component wit`, `component targets`, and `compose` to
+validate WIT/contracts and produce one composed component. `host-rs check` and
+`run` will execute that finished artifact with Wasmtime/WASI 0.2. A distributed
+bundle will not contain `wasm-tools` or individual provider build toolchains.
+
+`wasm-tools` is Apache-2.0 and is compatible with the sibling projects'
+AGPL-3.0-or-later repository licensing when notices are retained. We do not
+bundle it: it is a platform-specific build-time executable, not an application
+runtime dependency. SQLite, sync, SMTP, TLS, terminal, and secret-provider
+tools remain unnecessary until an approved, vendored provider requires them.
+
 ## Current Demo
 
 The runnable starter draws a compact mock inbox using WASI stdout. It proves
