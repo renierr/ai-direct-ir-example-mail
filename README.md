@@ -112,11 +112,15 @@ they exist as locally vendorable, checked artifacts.
 
 ## Layout
 
-- `mail.wat` -- application logic and the currently runnable mock inbox.
+- `mail.wat` -- root module, shared imports/memory, and ordered source includes.
+- `src/` -- application-owned WAT fragments by state, domain, view, input, and
+  provider-adapter responsibility; see `src/README.md`.
 - `host.toml` -- current harness entry point; provider declarations are added
   only once their artifacts exist.
 - `providers/` -- proposed WIT contracts and integration requirements.
 - `docs/` -- product behavior, state model, and verification plan.
+- `.agents/skills/ai-direct-ir/SKILL.md` -- generic project-local AI workflow
+  for WAT, WASM, WIT, providers, and verification.
 
 The scaffold convention is deliberate: `docs/01-spec.md` records requested
 behavior and acceptance criteria, `docs/02-architecture.md` records state,

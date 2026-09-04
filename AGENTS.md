@@ -19,8 +19,11 @@ The app may break during that builder-phase work.
 - Never install, upgrade, or remove software without explicit user consent.
 - Never commit real email, account identifiers, passwords, OAuth tokens, SMTP
   credentials, private keys, mailbox databases, or copied private fixtures.
-- Change `mail.wat`, not generated `mail.wasm`; run `host-rs build` after WAT
-  edits and `host-rs check` before claiming integration works.
+- Change the smallest owning WAT source under `src/`, not generated
+  `mail.wasm`. Keep `mail.wat` as the module boundary and ordered include list;
+  read `src/README.md` and `.agents/skills/ai-direct-ir/SKILL.md` before
+  restructuring.
+  `host-rs check`, `run`, and `dist` rebuild changed WAT automatically.
 - Keep the WAT memory map current whenever raw memory is used.
 - The current harness and provider formats are experimental. Replace weak
   interfaces directly; do not add compatibility layers in builder phase.
