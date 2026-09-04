@@ -25,17 +25,21 @@ projects replace an experimental interface.
 
 ### Current Mock Application
 
-The current Core WAT demo needs only these executables on `PATH`:
+The current Core WAT demo needs only `host-rs` on `PATH`:
 
 | Tool | Why it is needed |
 |---|---|
 | `host-rs` | Builds, checks, runs, and packages this project. |
-| `wat2wasm` from WABT | Assembles `mail.wat` into `mail.wasm`. |
 
 No Rust, Cargo, Rust WASM target, database, network service, mail account, or
-provider compiler is required to run the mock inbox. `.env` is deliberately
+provider compiler is required to run the mock inbox. `host-rs` assembles and
+validates `mail.wat` in-process; it does not optimize it. `.env` is deliberately
 ignored for future local credentials or configuration; this application does
 not currently read it or pass environment variables to WAT.
+
+`host-rs check`, `run`, and `dist` rebuild `mail.wasm` automatically when
+`mail.wat` is newer or the artifact is missing. Use `host-rs build` to force a
+rebuild.
 
 ### Future Component Providers
 
