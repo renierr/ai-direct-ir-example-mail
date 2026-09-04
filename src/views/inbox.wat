@@ -1,6 +1,6 @@
 ;; Inbox rendering. It owns the mock display until real providers exist.
 (func (export "_start")
-  (call $print (i32.const 0x1000) (i32.const 373)))
+  (call $print (i32.const 0x1000) (i32.const 606)))
 
 (data (i32.const 0x1000)
   "\n"

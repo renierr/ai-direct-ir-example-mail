@@ -14,7 +14,12 @@ Confirm that the mock inbox text appears and that `dist/` contains the harness,
 
 ## Before Real Accounts
 
-- Provider WIT worlds validate with `wasm-tools component wit providers/`.
+- Each provider WIT package validates on its own. A WIT directory is one
+  package, so every contract has its own directory:
+
+  ```bash
+  for wit in providers/*/wit; do wasm-tools component wit "$wit"; done
+  ```
 - Provider components pass their catalog conformance tests.
 - Use a disposable local mail server/account, never a personal mailbox.
 - Verify TLS certificate failures, authentication failures, network timeouts,

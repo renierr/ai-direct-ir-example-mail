@@ -43,12 +43,15 @@ rebuild.
 
 ### Future Component Providers
 
-When this project composes a WIT component root with vendored providers,
-`host-rs build` will also require `wasm-tools 1.257.1` on the build machine. It
-will use only `validate`, `component wit`, `component targets`, and `compose` to
-validate WIT/contracts and produce one composed component. `host-rs check` and
-`run` will execute that finished artifact with Wasmtime/WASI 0.2. A distributed
-bundle will not contain `wasm-tools` or individual provider build toolchains.
+`host-rs` already embeds a parser that handles the Component Model text format,
+and Wasmtime 48 already carries WASI 0.2, so a component root needs no new tool
+to author. Wiring that root to a *prebuilt* provider binary does need a
+composition step, and which one is an open decision in `ai-direct-ir`
+(`wasm-tools compose` is deprecated upstream). `wasm-tools 1.257.1` stays an
+optional cross-check: `validate`, `component wit`, `component targets`.
+`host-rs check` and `run` will execute the finished artifact with Wasmtime and
+WASI 0.2. A distributed bundle will not contain `wasm-tools` or individual
+provider build toolchains.
 
 `wasm-tools` is Apache-2.0 and is compatible with the sibling projects'
 AGPL-3.0-or-later repository licensing when notices are retained. We do not
@@ -117,7 +120,7 @@ they exist as locally vendorable, checked artifacts.
   provider-adapter responsibility; see `src/README.md`.
 - `host.toml` -- current harness entry point; provider declarations are added
   only once their artifacts exist.
-- `providers/` -- proposed WIT contracts and integration requirements.
+- `providers/<name>/wit/` -- proposed WIT contracts, one package per directory.
 - `docs/` -- product behavior, state model, and verification plan.
 - `.agents/skills/ai-direct-ir/SKILL.md` -- generic project-local AI workflow
   for WAT, WASM, WIT, providers, and verification.
