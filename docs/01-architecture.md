@@ -8,7 +8,7 @@ security-sensitive implementation work.
 
 | Layer | Responsibility |
 |---|---|
-| `mail.wat` + `src/` | Root module plus modular navigation, compose/reply, search, and presentation policy |
+| `mail.wat` + `src/` | Root component plus modular navigation, compose/reply, search, and presentation policy |
 | `mail-store` | SQLite database, schema, migrations, local cache, transactions |
 | `mail-sync` | IMAP or JMAP synchronization, TLS, protocol parsing, retries |
 | `mail-submit` | SMTP submission, TLS, delivery/rejection errors |
@@ -33,12 +33,14 @@ receives success/failure states, never unrestricted credential material.
 
 ## Source Structure
 
-`mail.wat` declares the one Core WASM module, shared memory/imports, and ordered
-`;; @include src/path.wat` lines. Product-owned WAT lives by responsibility in
-`src/`: state transitions, input validation, domain policy, views, shared
-strings, and thin provider adapters. The include fragments are textual parts of
-one module. A separate Core module is reserved for a declared provider ABI, not
-used merely to organize application source.
+`mail.wat` is a WASI 0.2 component. It asks for the boundary with `;; @wasi`,
+declares the one `(core module $main ...)` with shared memory/imports and the
+lifted `wasi:cli/run` entry, and lists ordered `;; @include src/path.wat` lines.
+Product-owned WAT lives by responsibility in `src/`: state transitions, input
+validation, domain policy, views, shared strings, and thin provider adapters.
+The include fragments are textual parts of that one core module. A separate
+component is reserved for a declared provider contract, not used merely to
+organize application source.
 
 ## Offline-First State
 

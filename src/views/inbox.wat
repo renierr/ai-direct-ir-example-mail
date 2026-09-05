@@ -1,8 +1,10 @@
 ;; Inbox rendering. It owns the mock display until real providers exist.
-(func (export "_start")
+(func $view.inbox
   (call $print (global.get $inbox.ptr) (global.get $inbox.len)))
 
-(data $inbox (i32.const 0x1000)
+;; Unplaced: the root's `;; @data` region owns the address, `air` derives
+;; $inbox.ptr and $inbox.len, so editing the text is the whole change.
+(data $inbox
   "\n"
   "  AI-Direct Mail                                      mock/offline\n"
   "  ----------------------------------------------------------------\n"

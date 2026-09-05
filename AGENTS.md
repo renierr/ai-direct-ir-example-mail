@@ -23,7 +23,8 @@ The app may break during that builder-phase work.
 - Never commit real email, account identifiers, passwords, OAuth tokens, SMTP
   credentials, private keys, mailbox databases, or copied private fixtures.
 - Change the smallest owning WAT source under `src/`, not generated
-  `mail.wasm`. Keep `mail.wat` as the module boundary and ordered include list;
+  `mail.wasm`. Keep `mail.wat` as the component boundary and ordered include
+  list;
   read `src/README.md` and `.agents/skills/ai-direct-ir/SKILL.md` before
   restructuring.
   `air check`, `run`, and `dist` rebuild changed WAT automatically.

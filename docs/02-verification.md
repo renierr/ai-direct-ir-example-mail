@@ -9,8 +9,14 @@ air run
 air dist
 ```
 
-Confirm that the mock inbox text appears and that `dist/` contains the harness,
-`host.toml`, and `mail.wasm`.
+`air check` must report `component instantiated, all imports satisfied`;
+`air run` must draw the mock inbox and exit 0. `dist/` contains the harness,
+`host.toml`, and `mail.wasm` and nothing else -- the bundle carries no build
+tool, so it runs with an empty environment:
+
+```bash
+cd dist && env -i PATH=/var/empty ./air run host.toml
+```
 
 ## Before Real Accounts
 

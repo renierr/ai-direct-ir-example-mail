@@ -13,9 +13,13 @@ provider, or its WIT/Component Model integration.
 - Every project needs only `air` on `PATH`. It assembles and validates both
   Core WAT and component WAT in-process; do not add WABT, `wit-bindgen`, or a
   language toolchain merely to build an application.
-- **Prefer `target = "component"` (WASI 0.2) for new work.** Preview 1 (`target
-  = "native"`) remains supported and is still required for raw-mode terminals,
-  the `net.*` sockets ABI, `ui.*`, and `[[libs]]`/`[[bridges]]` providers.
+- **`target = "component"` (WASI 0.2) is the default and is inferred from the
+  artifact.** `browser` is the only other one. The native Preview 1 host,
+  `[[libs]]` and `[[bridges]]` have retired: a prebuilt Core module is lifted
+  with `wasm-tools component new` and consumed through `[[providers]]`, never
+  linked directly. Raw-mode terminals, sockets and GUI are component
+  interfaces now -- `ai-direct:host/term`, `wasi:sockets`, and
+  `ai-direct:host/ui` with `mode = "gui"`.
 - `air check`, target run, and `air dist` rebuild a declared root WAT
   source when it or an included fragment is newer than the generated WASM.
   `air build` forces a rebuild.
@@ -28,10 +32,12 @@ provider, or its WIT/Component Model integration.
   and `air` packs them in source order. A segment that states a literal offset
   keeps it, which is how scratch space and lib ABI maps stay author-owned;
   placed and unplaced segments may not overlap. Unnamed segments are unchanged.
-- `wasm-tools` is an optional cross-check, never required to build an app. Use
-  `validate`, `component wit`, and `component targets`; do not place it in an
-  application distribution or invoke it at runtime. `wasm-tools compose` is
-  deprecated upstream — composition of prebuilt components is an open decision.
+- `air` spawns no external program: it assembles WAT with an embedded parser
+  and links and runs with Wasmtime. `wasm-tools` is a build-time tool for
+  *authoring* a provider from a foreign Core module (`component new`, plus
+  `--adapt` for Preview 1), and otherwise an optional cross-check --
+  `validate`, `component wit`, `component targets`. The committed artifact is
+  the lifted component; a distribution contains no build tool.
 - Never install, upgrade, or remove tooling without explicit user consent.
 
 ## WASI 0.2 Recipes
@@ -49,7 +55,7 @@ lowering:
 ```
 
 Capabilities are `stdin`, `stdout`, `stderr`, `exit`, `exit-with-code`,
-`args`; `pages=` (default 1) and
+`args`, `filesystem`, `sockets`; `pages=` (default 1) and
 `heap=` (default `0x8000`, the canonical ABI bump base) are optional. An
 unknown word is an error, not a silent omission. The generated names are the
 boundary ABI:
@@ -127,7 +133,7 @@ Read the WIT for an interface before declaring it. It ships with Wasmtime:
 
 1. Read `AGENTS.md`, `docs/01-architecture.md`, `docs/02-verification.md`, and
    `src/README.md` before changing behavior.
-2. Keep the root WAT file as the module boundary and ordered source index.
+2. Keep the root WAT file as the component boundary and ordered source index.
    Place product-owned WAT in the smallest `src/` fragment by responsibility:
    state, input, domain policy, views, strings, or provider adapter.
 3. Add ordered `;; @include relative/path.wat` lines for fragments. They are
@@ -148,8 +154,8 @@ Read the WIT for an interface before declaring it. It ships with Wasmtime:
   generator and no language toolchain are involved. Ask for the WASI boundary
   with `;; @wasi <capabilities>`, write the logic in an ordinary
   `(core module ...)`, and lift the entry with `canon lift`.
-- A component app cannot declare `[[libs]]` or `[[bridges]]`: those are Core
-  WASM mechanisms and mean nothing across a component boundary.
+- There is no `[[libs]]` or `[[bridges]]`: a dependency is a component
+  declared under `[[providers]]`, wired at link time.
 - For WIT/Component Model work, define a small versioned WIT contract first;
   validate it, then verify the provider component against its declared world.
   A WIT directory is one package, so each contract needs its own directory.

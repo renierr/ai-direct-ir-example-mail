@@ -1,9 +1,9 @@
 # Experimental mail-client foundation. Add real providers only after they exist
 # as local, hash-pinned artifacts under vendor/.
-target = "native"
+target = "component"
 mode = "command"
 
 [app]
 source = "mail.wat"
 path = "mail.wasm"
-run = "_start"
+run = "wasi:cli/run"

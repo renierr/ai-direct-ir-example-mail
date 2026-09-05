@@ -25,7 +25,7 @@ projects replace an experimental interface.
 
 ### Current Mock Application
 
-The current Core WAT demo needs only `air` on `PATH`:
+The current component demo needs only `air` on `PATH`:
 
 | Tool | Why it is needed |
 |---|---|
@@ -43,15 +43,27 @@ rebuild.
 
 ### Future Component Providers
 
-`air` already embeds a parser that handles the Component Model text format,
-and Wasmtime 48 already carries WASI 0.2, so a component root needs no new tool
-to author. Wiring that root to a *prebuilt* provider binary does need a
-composition step, and which one is an open decision in `ai-direct-ir`
-(`wasm-tools compose` is deprecated upstream). `wasm-tools 1.257.1` stays an
-optional cross-check: `validate`, `component wit`, `component targets`.
-`air check` and `run` will execute the finished artifact with Wasmtime and
-WASI 0.2. A distributed bundle will not contain `wasm-tools` or individual
-provider build toolchains.
+No composition tool is involved. A component consumes another by declaring it
+under `[[providers]]`; `air` instantiates the provider and forwards its exports
+into the application's imports at link time, so the wiring is manifest data,
+not a build step:
+
+```toml
+[[providers]]
+path = "vendor/ai-direct-mail-store-0.1.0/artifacts/wasm32-wasi/mail-store.component.wasm"
+```
+
+`wasm-tools` is needed only to *author* a provider whose upstream build emits a
+Core module: `wasm-tools component new` lifts that blob to a component once, and
+`--adapt wasi_snapshot_preview1.reactor.wasm` covers a Preview 1 module even
+with no source. The committed artifact is the lifted component, so the lifting
+never happens again. `wasm-tools` also stays an optional cross-check --
+`validate`, `component wit`, `component targets`.
+
+`air` invokes no external program at any point: it assembles WAT with an
+embedded parser and links and runs with Wasmtime. A distribution is `air`, the
+`.wasm` files, and `host.toml`; it contains no build tool and needs none on the
+machine that runs it.
 
 `wasm-tools` is Apache-2.0 and is compatible with the sibling projects'
 AGPL-3.0-or-later repository licensing when notices are retained. We do not
@@ -61,8 +73,9 @@ tools remain unnecessary until an approved, vendored provider requires them.
 
 ## Current Demo
 
-The runnable starter draws a compact mock inbox using WASI stdout. It proves
-the application shape and keeps all view state and behavior in WAT:
+The runnable starter is a WASI 0.2 component that draws a compact mock inbox
+on stdout. It proves the application shape and keeps all view state and
+behavior in WAT:
 
 ```bash
 air build
@@ -115,7 +128,9 @@ they exist as locally vendorable, checked artifacts.
 
 ## Layout
 
-- `mail.wat` -- root module, shared imports/memory, and ordered source includes.
+- `mail.wat` -- root component: the `;; @wasi` boundary, the one core module
+  with shared imports/memory and the lifted `run` entry, and the ordered
+  source includes.
 - `src/` -- application-owned WAT fragments by state, domain, view, input, and
   provider-adapter responsibility; see `src/README.md`.
 - `host.toml` -- current harness entry point; provider declarations are added
@@ -134,7 +149,8 @@ verification documents.
 
 ## Roadmap
 
-1. Prove WIT/Component Model composition with a small provider.
+1. Consume a small provider through `[[providers]]` to prove the WIT contract
+   shape this application will use.
 2. Present SQLite implementation candidates for explicit approval, then add a
    SQLite-backed `mail-store` provider and generic writable data mount.
 3. Add mail synchronization and submission providers with explicit TLS and
