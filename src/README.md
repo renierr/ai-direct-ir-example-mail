@@ -13,16 +13,16 @@ src/
   strings.wat           stable shared data blocks when needed
 ```
 
-`host-rs` expands each standalone `;; @include src/path.wat` line in the root
+`air` expands each standalone `;; @include src/path.wat` line in the root
 before assembly, at any nesting depth; every include path is relative to the
 directory holding `mail.wat`. Fragments are ordered text inside that same
 `(module ...)` and must not open a module themselves. Change the smallest
-owning fragment, update the matching document, then run `host-rs check` and
-`host-rs run`.
+owning fragment, update the matching document, then run `air check` and
+`air run`.
 
 Display text lives in a named data segment, so no fragment restates a byte
 count. `src/views/inbox.wat` declares `(data $inbox (i32.const 0x1000) ...)`
-and reads `$inbox.ptr` / `$inbox.len`, which `host-rs` derives from the
+and reads `$inbox.ptr` / `$inbox.len`, which `air` derives from the
 segment; editing the text is enough.
 
 Separate Core WASM modules are providers with explicit manifest ABIs, not a way

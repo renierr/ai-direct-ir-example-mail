@@ -4,7 +4,7 @@
 
 Build a useful terminal mail client with application behavior authored in WAT.
 Use mature storage, mail-protocol, TLS, and terminal implementations through
-project-owned providers. Do not add mail-specific APIs to `host-rs`.
+project-owned providers. Do not add mail-specific APIs to `air`.
 
 ## Repository Role
 
@@ -26,12 +26,12 @@ The app may break during that builder-phase work.
   `mail.wasm`. Keep `mail.wat` as the module boundary and ordered include list;
   read `src/README.md` and `.agents/skills/ai-direct-ir/SKILL.md` before
   restructuring.
-  `host-rs check`, `run`, and `dist` rebuild changed WAT automatically.
+  `air check`, `run`, and `dist` rebuild changed WAT automatically.
 - Keep the WAT memory map current whenever raw memory is used.
 - The current harness and provider formats are experimental. Replace weak
   interfaces directly; do not add compatibility layers in builder phase.
 - Add a dependency as a vendored provider with a WIT contract, provenance,
-  license, hash, test, and explicit permissions. Do not make `host-rs` grow for
+  license, hash, test, and explicit permissions. Do not make `air` grow for
   SQLite, SMTP, IMAP, JMAP, TLS, or TUI features.
 - This repository is an integration driver for the harness and provider catalog.
   When a generic capability is missing, improve those sibling projects with the
@@ -48,10 +48,10 @@ The app may break during that builder-phase work.
 ## Workflow
 
 ```bash
-host-rs build
-host-rs check
-host-rs run
-host-rs dist
+air build
+air check
+air run
+air dist
 ```
 
 ## Provider Boundary

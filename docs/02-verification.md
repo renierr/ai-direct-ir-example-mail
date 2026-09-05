@@ -3,10 +3,10 @@
 ## Current Foundation
 
 ```bash
-host-rs build
-host-rs check
-host-rs run
-host-rs dist
+air build
+air check
+air run
+air dist
 ```
 
 Confirm that the mock inbox text appears and that `dist/` contains the harness,

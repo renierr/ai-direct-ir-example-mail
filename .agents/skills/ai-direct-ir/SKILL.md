@@ -1,6 +1,6 @@
 ---
 name: ai-direct-ir
-description: Work safely with AI-Direct IR WAT, WASM, WIT, providers, and host-rs projects.
+description: Work safely with AI-Direct IR WAT, WASM, WIT, providers, and AIR projects.
 ---
 
 # AI-Direct IR Skill
@@ -10,21 +10,21 @@ provider, or its WIT/Component Model integration.
 
 ## Environment
 
-- Every project needs only `host-rs` on `PATH`. It assembles and validates both
+- Every project needs only `air` on `PATH`. It assembles and validates both
   Core WAT and component WAT in-process; do not add WABT, `wit-bindgen`, or a
   language toolchain merely to build an application.
 - **Prefer `target = "component"` (WASI 0.2) for new work.** Preview 1 (`target
   = "native"`) remains supported and is still required for raw-mode terminals,
   the `net.*` sockets ABI, `ui.*`, and `[[libs]]`/`[[bridges]]` providers.
-- `host-rs check`, target run, and `host-rs dist` rebuild a declared root WAT
+- `air check`, target run, and `air dist` rebuild a declared root WAT
   source when it or an included fragment is newer than the generated WASM.
-  `host-rs build` forces a rebuild.
-- `host-rs build` assembles, validates, and compiles before writing. A failed
+  `air build` forces a rebuild.
+- `air build` assembles, validates, and compiles before writing. A failed
   build leaves the previous artifact in place; errors name the fragment file and
   line you wrote, not the expanded text. Progress goes to stderr.
 - Never hand-write a string's byte length. Name the data segment --
   `(data $msg (i32.const 0x1000) "...")` -- and read `$msg.ptr` / `$msg.len`,
-  which host-rs derives from the segment. A named segment needs a literal
+  which `air` derives from the segment. A named segment needs a literal
   offset and may not overlap another. Unnamed segments are unchanged.
 - `wasm-tools` is an optional cross-check, never required to build an app. Use
   `validate`, `component wit`, and `component targets`; do not place it in an
@@ -35,43 +35,47 @@ provider, or its WIT/Component Model integration.
 ## WASI 0.2 Recipes
 
 `target = "component"` is the default for new work. Your own scaffolded
-`<name>.wat` is a complete, working example: read it first. The four
-constructs below are the ones that are hard to guess.
+`<name>.wat` is a complete, working example: read it first.
 
-**Declare an interface you import.** A signature must reference the
-*exported* type id (`$sexp`), never the local type it was defined from, or
-validation rejects the whole instance with an unhelpful message:
-
-```wat
-(import "wasi:io/streams@0.2.12" (instance $streams
-  (export "error" (type $ie (eq $error)))
-  (export "output-stream" (type $os (sub resource)))
-  (type $se (variant (case "last-operation-failed" (own $ie)) (case "closed")))
-  (export "stream-error" (type $sexp (eq $se)))
-  (export "[method]output-stream.blocking-write-and-flush"
-    (func (param "self" (borrow $os)) (param "contents" (list u8))
-          (result (result (error $sexp)))))))
-```
-
-**Break the memory cycle.** Lowering an import needs the memory; the logic
-module needs the lowered imports. Put the memory in its own core module:
+**Ask for the boundary; do not write it.** One directive inside `(component`
+generates the interface imports, the shared memory and the canonical ABI
+lowering:
 
 ```wat
-(core module $mem-mod (memory (export "memory") 1) ...)
-(core instance $mem (instantiate $mem-mod))
-(alias core export $mem "memory" (core memory $memory))
-(core func $write-l (canon lower (func $write) (memory $memory) (realloc $realloc)))
+(component
+  ;; @wasi stdin stdout stderr exit pages=2 heap=0x8000
 ```
 
-**Export `cabi_realloc` when the host returns a value to you.** Anything
-returning `list<u8>` or `string` is allocated into your memory through it. A
-bump allocator is enough when the program never frees; place its base above
-every fixed address in the memory map.
+Capabilities are `stdin`, `stdout`, `stderr`, `exit`; `pages=` (default 1) and
+`heap=` (default `0x8000`, the canonical ABI bump base) are optional. An
+unknown word is an error, not a silent omission. The generated names are the
+boundary ABI:
+
+| Name | What it is |
+| --- | --- |
+| `$mem` | core instance exporting `memory`; instantiate with `(with "env" (instance $mem))` |
+| `$wasi` | core instance of lowered imports; `(with "wasi" (instance $wasi))` |
+| `$memory` / `$realloc` | the memory and its bump allocator, for lowering your own imports |
+
+`$wasi` exports one Core function per capability: `get-stdin`, `read`,
+`get-stdout`, `get-stderr`, `write`, `exit`. Write the program against those in
+an ordinary `(core module $main ...)`.
 
 **Lift the entry point.** `run: func() -> result` — `0` is exit 0, `1` is a
-failed run. For an exit from deep inside the program, where a return cannot
-reach, import `wasi:cli/exit` (`exit: func(status: result)`), the direct
-replacement for Preview 1's `proc_exit`.
+failed run:
+
+```wat
+  (core instance $app (instantiate $main
+    (with "env" (instance $mem))
+    (with "wasi" (instance $wasi))))
+  (func $run (result (result)) (canon lift (core func $app "run")))
+  (instance $run-i (export "run" (func $run)))
+  (export "wasi:cli/run@0.2.12" (instance $run-i))
+)
+```
+
+For an exit from deep inside the program, where a return cannot reach, add the
+`exit` capability: it is the direct replacement for Preview 1's `proc_exit`.
 
 **Consume a provider.** Declare it in the manifest and import its interface
 like any other:
@@ -82,7 +86,7 @@ source = "provider.wat"
 path = "provider.wasm"
 ```
 
-`host-rs` instantiates the provider and forwards its exports into your imports.
+`air` instantiates the provider and forwards its exports into your imports.
 Plain values cross freely; resource handles do not, because each component
 instance owns its own table. The project's own capabilities arrive the same
 way: `ai-direct:host/term` is the terminal, imported exactly like a WASI
@@ -112,12 +116,10 @@ Read the WIT for an interface before declaring it. It ships with Wasmtime:
   a source-file organization technique. Do not modify the harness merely
   because one application needs a library.
 - `target = "component"` runs a WASM component on WASI 0.2. Its source is a
-  `(component ...)` WAT that host-rs assembles in-process; no bindings
-  generator and no language toolchain are involved. Declare the WASI
-  interfaces you import, lower them with `canon lower`, write the logic in an
-  ordinary `(core module ...)`, and lift the entry with `canon lift`. A
-  function signature must reference the *exported* type id, not the local type
-  it was defined from, or the whole instance fails validation.
+  `(component ...)` WAT that `air` assembles in-process; no bindings
+  generator and no language toolchain are involved. Ask for the WASI boundary
+  with `;; @wasi <capabilities>`, write the logic in an ordinary
+  `(core module ...)`, and lift the entry with `canon lift`.
 - A component app cannot declare `[[libs]]` or `[[bridges]]`: those are Core
   WASM mechanisms and mean nothing across a component boundary.
 - For WIT/Component Model work, define a small versioned WIT contract first;
@@ -132,8 +134,8 @@ Read the WIT for an interface before declaring it. It ships with Wasmtime:
 
 1. Update the project documentation for behavior, state/capability/trust
    decisions, and proof before claiming a feature complete.
-2. Run `host-rs check`, then the target's observable manual or automated check.
-3. Run `host-rs dist` for distribution-affecting work.
+2. Run `air check`, then the target's observable manual or automated check.
+3. Run `air dist` for distribution-affecting work.
 
 Never commit generated `.wasm`, `dist/`, `.env`, private data, credentials, or
 unreviewed provider caches.

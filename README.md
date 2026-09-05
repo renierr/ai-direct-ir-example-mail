@@ -13,7 +13,7 @@ mail-specific harness API.
 
 | Repository | What it is for | What we do there |
 |---|---|---|
-| `ai-direct-ir` | Generic platform | Improve `host-rs` composition, validation, permissions, lifecycle, and packaging when this app exposes a reusable need. |
+| `ai-direct-ir` | Generic platform | Improve `air` composition, validation, permissions, lifecycle, and packaging when this app exposes a reusable need. |
 | `ai-direct-ir-providers` | Reusable providers | Package upstream SQLite, mail protocol, TUI, and other mature implementations as reproducible WASM/WIT providers. |
 | `ai-direct-ir-example-mail` | This application | Write the mail client's product behavior and state transitions directly in WAT, then consume declared providers. |
 
@@ -25,31 +25,31 @@ projects replace an experimental interface.
 
 ### Current Mock Application
 
-The current Core WAT demo needs only `host-rs` on `PATH`:
+The current Core WAT demo needs only `air` on `PATH`:
 
 | Tool | Why it is needed |
 |---|---|
-| `host-rs` | Builds, checks, runs, and packages this project. |
+| `air` | Builds, checks, runs, and packages this project. |
 
 No Rust, Cargo, Rust WASM target, database, network service, mail account, or
-provider compiler is required to run the mock inbox. `host-rs` assembles and
+provider compiler is required to run the mock inbox. `air` assembles and
 validates `mail.wat` in-process; it does not optimize it. `.env` is deliberately
 ignored for future local credentials or configuration; this application does
 not currently read it or pass environment variables to WAT.
 
-`host-rs check`, `run`, and `dist` rebuild `mail.wasm` automatically when
-`mail.wat` is newer or the artifact is missing. Use `host-rs build` to force a
+`air check`, `run`, and `dist` rebuild `mail.wasm` automatically when
+`mail.wat` is newer or the artifact is missing. Use `air build` to force a
 rebuild.
 
 ### Future Component Providers
 
-`host-rs` already embeds a parser that handles the Component Model text format,
+`air` already embeds a parser that handles the Component Model text format,
 and Wasmtime 48 already carries WASI 0.2, so a component root needs no new tool
 to author. Wiring that root to a *prebuilt* provider binary does need a
 composition step, and which one is an open decision in `ai-direct-ir`
 (`wasm-tools compose` is deprecated upstream). `wasm-tools 1.257.1` stays an
 optional cross-check: `validate`, `component wit`, `component targets`.
-`host-rs check` and `run` will execute the finished artifact with Wasmtime and
+`air check` and `run` will execute the finished artifact with Wasmtime and
 WASI 0.2. A distributed bundle will not contain `wasm-tools` or individual
 provider build toolchains.
 
@@ -65,9 +65,9 @@ The runnable starter draws a compact mock inbox using WASI stdout. It proves
 the application shape and keeps all view state and behavior in WAT:
 
 ```bash
-host-rs build
-host-rs check
-host-rs run
+air build
+air check
+air run
 ```
 
 The current demo has no network, credentials, persistent storage, or real mail
@@ -86,7 +86,7 @@ WAT mail application
 The app owns mailbox navigation, compose/reply policy, search behavior, local
 state transitions, and presentation. Providers own mature protocol, database,
 and terminal implementation details. Adding those providers must not require a
-mail-specific `host-rs` change.
+mail-specific `air` change.
 
 ## Provider Status
 
