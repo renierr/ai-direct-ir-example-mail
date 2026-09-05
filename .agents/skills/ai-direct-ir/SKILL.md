@@ -18,8 +18,8 @@ provider, or its WIT/Component Model integration.
   `[[libs]]` and `[[bridges]]` have retired: a prebuilt Core module is lifted
   with `wasm-tools component new` and consumed through `[[providers]]`, never
   linked directly. Raw-mode terminals, sockets and GUI are component
-  interfaces now -- `ai-direct:host/term`, `wasi:sockets`, and
-  `ai-direct:host/ui` with `mode = "gui"`.
+  interfaces now: `;; @wasi term`, `;; @wasi sockets`, and `;; @wasi ui` with
+  `mode = "gui"`.
 - `air check`, target run, and `air dist` rebuild a declared root WAT
   source when it or an included fragment is newer than the generated WASM.
   `air build` forces a rebuild.
@@ -55,7 +55,8 @@ lowering:
 ```
 
 Capabilities are `stdin`, `stdout`, `stderr`, `exit`, `exit-with-code`,
-`args`, `filesystem`, `sockets`; `pages=` (default 1) and
+`args`, `filesystem`, `sockets`, and the harness's own `term` and `ui`;
+`pages=` (default 1) and
 `heap=` (default `0x8000`, the canonical ABI bump base) are optional. An
 unknown word is an error, not a silent omission. The generated names are the
 boundary ABI:
@@ -122,12 +123,16 @@ path = "provider.wasm"
 
 `air` instantiates the provider and forwards its exports into your imports.
 Plain values cross freely; resource handles do not, because each component
-instance owns its own table. The project's own capabilities arrive the same
-way: `ai-direct:host/term` is the terminal, imported exactly like a WASI
-interface.
+instance owns its own table.
 
-Read the WIT for an interface before declaring it. It ships with Wasmtime:
-`wasmtime-wasi-*/src/p2/wit/deps/{cli,io,filesystem,sockets}.wit`.
+The harness's own interfaces are not providers and need no manifest entry:
+`ai-direct:host/term` and `ai-direct:host/ui` are always linked, and `;; @wasi
+term` / `;; @wasi ui` generate their imports from WIT like a WASI capability.
+That is the terminal a `tui` provider would have to beat.
+
+Read the WIT for an interface before declaring it. WASI's ships with Wasmtime
+(`wasmtime-wasi-*/src/p2/wit/deps/{cli,io,filesystem,sockets}.wit`); the
+harness's is `air/wit/ai-direct-host/host.wit` in the platform repository.
 
 ## Core WAT
 
